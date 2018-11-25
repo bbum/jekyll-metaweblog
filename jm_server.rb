@@ -3,7 +3,7 @@ require 'rubygems'
 require 'webrick'
 require 'xmlrpc/server'
 require 'optparse'
-require 'metaweblog'
+require './metaweblog.rb'
 
 options = {}
 

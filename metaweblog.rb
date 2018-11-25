@@ -1,8 +1,8 @@
 require 'rubygems'
 require 'json'
 require 'xmlrpc/server'
-require 'store'
-require 'monkeypatch'
+require './store.rb'
+require './monkeypatch.rb'
 
 # not just the metaweblog API - this is _all_ the APIs crammed into one namespace. Ugly.
 
@@ -56,7 +56,7 @@ class MetaWeblog
         end
         
         return {
-            :postId => post.filename,
+            :postid => post.filename,
             :title => title,
             :description => post.body || "",
             :dateCreated => post.date || Date.today,
@@ -169,8 +169,8 @@ class MetaWeblog
     end
     
 
-    def getPostOrDie(postId)
-        post = store.get(postId)
+    def getPostOrDie(postid)
+        post = store.get(postid)
         if not post
             raise XMLRPC::FaultException.new(-99, "post not found")
         end
@@ -183,8 +183,8 @@ class MetaWeblog
     # Blogger API
  
     # weird method sig, this.
-    def deletePost(apikey, postId, user, pass, publish)
-        return store.delete(postId)
+    def deletePost(apikey, postid, user, pass, publish)
+        return store.delete(postid)
     end
 
 
@@ -205,12 +205,12 @@ class MetaWeblog
         #return store.posts.map{|p| p.tags }.flatten.uniq
     end
     
-    def getPost(postId, username, password, extra = {})
-        return post_response(getPostOrDie(postId))
+    def getPost(postid, username, password, extra = {})
+        return post_response(getPostOrDie(postid))
     end
 
-    def editPost(postId, username, password, data, publish)
-        post = getPostOrDie(postId)
+    def editPost(postid, username, password, data, publish)
+        post = getPostOrDie(postid)
         populate(post, data)
         store.write(post)
         return true
@@ -244,11 +244,11 @@ class MetaWeblog
         return []
     end
     
-    def getPostCategories(postId, user, pass)
+    def getPostCategories(postid, user, pass)
         return []
     end
     
-    def setPostCategories(postId, user, pass, categories)
+    def setPostCategories(postid, user, pass, categories)
         return true
     end
     
@@ -319,7 +319,7 @@ class MetaWeblog
         ]
     end
     
-    def getComments(postId, user, pass, extra)
+    def getComments(postid, user, pass, extra)
         return []
     end
 

@@ -1,5 +1,7 @@
-require "post"
+require "./post.rb"
 require "fileutils"
+
+DirectoriesToIgnore = ["friday-archive"] # if you have a directory full of unpublished posts, put it here
 
 class Store
     attr_accessor :base, :posts, :output, :git
@@ -37,6 +39,11 @@ class Store
                 next if file.match(/^_/) and file != "_posts"
 
                 full = File.join(base, folder, file)
+		if DirectoriesToIgnore.include? file
+		  puts "Ignoring #{full}"
+                  next
+		end
+
                 if File.directory? full
                     pages += walk(base, File.join(folder, file))
                 elsif File.file? full
@@ -44,7 +51,8 @@ class Store
                     file = File.join(folder, file).gsub(/^\//,'')
                     page = Post.new(base, file)
                     if page and page.read
-                        pages << page
+                      puts "Found #{page.type}:  #{file}"
+                      pages << page
                     end
                 end
             }

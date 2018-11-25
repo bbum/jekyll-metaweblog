@@ -1,5 +1,7 @@
 require 'yaml'
 
+AcceptedPostExtensions = [".md", ".markdown", ".MARKUP", ".html"]
+
 class Post
     attr_accessor :base, :filename, :date, :body, :data, :type, :slug
     
@@ -17,10 +19,10 @@ class Post
         self.body = ""
 
         # page filenames need to start with a date
-        m = self.filename.match(/^_posts\/(\d{4})-(\d\d)-(\d\d)-(.*)$/)
+        m = self.filename.match(/(^|^.*\/)_posts\/(?<y>\d{4})-(?<m>\d\d)-(?<d>\d\d)-(?<slug>.*)$/)
         if m
-            self.date = Date.civil(m[1].to_i, m[2].to_i, m[3].to_i)
-            self.slug = m[4]
+            self.date = Date.civil(m[:y].to_i, m[:m].to_i, m[:d].to_i)
+            self.slug = m[:slug]
             self.type = :post
         end
     end
@@ -32,9 +34,32 @@ class Post
         # 4 bytes, look fior '---\n', then read till we have the preamble and parse it,
         # then read the rest, rather than always reading Xk of the file and splitting it
         # up. But this works.
-        
+
+        spew = false
+        # If you have a post that is failing to show up for some reason, uncomment this, fill in the fragment-of-filename,
+        # and you can see the last phase of read() that executed prior to rejection.
+        #        if self.filename.include? "fragment-of-filename"
+        #          spew = true
+        #        end
+
+        if spew
+          puts "checking extension #{self.filename}"
+        end
+
+	if not AcceptedPostExtensions.include? File.extname(self.filename)
+	   return false
+	end
+
+        if spew
+          puts "checking exists #{self.filename}"
+        end
+
         if not File.exists? File.join(self.base, self.filename)
             return false
+        end
+
+        if spew
+          puts "reading #{self.filename}"
         end
 
         # read the first 500k from the file. If the post is longer than this, it'll be truncated.
@@ -47,6 +72,10 @@ class Post
             return false
         end
         
+        if spew
+          puts "checking YAML #{self.filename}"
+        end
+
         # file must begin with YAML
         preamble = content.split(/---\s*\n/)[1]
         if not preamble
@@ -64,9 +93,13 @@ class Post
         # towards no right now - if you want something clever, do it with a
         # text editor.
         self.body = content.split(/---\s*\n/, 3)[2]
-        
+
         if not self.data["permalink"]
             self.data["permalink"] = "/" + self.filename.gsub(/\/index\.\w+$/,"/")
+        end
+
+        if spew
+          puts "post successfully readL #{self.filename}"
         end
         
         return true

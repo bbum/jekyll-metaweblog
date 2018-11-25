@@ -6,7 +6,7 @@ require 'metaweblog'
 root = "/Users/tomi/Sites/movieos/blog"
 ouput = "/archive/web/blog.movieos.org"
 
-password = "server password"
+password = "booger"
 
 server = XMLRPC::CGIServer.new
 
