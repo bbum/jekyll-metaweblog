@@ -2,9 +2,9 @@
 
 A stand-alone ruby/webrick server that will expose a Jekyll source folder via the Blogger / MT / Wordpress XML-RPC metaweblog interface, allowing you to create/edit/delete posts and pages using a GUI client, such as Marsedit.
 
-[jekyll-metaweblog is available on Github](https://github.com/tominsam/jekyll-metaweblog), and is under active development. It's not perfect, but it works.
+~~[jekyll-metaweblog is available on Github](https://github.com/tominsam/jekyll-metaweblog), and is under active development. It's not perfect, but it works.~~
 
-
+This is a [fork](https://github.com/bbum/jekyll-metaweblog) of tominsam's jekyll-metaweblog as it had gone stale (as these things do).   The fork attempts to modernize to the state of things in 2018.
 
 ### Usage
 
@@ -16,8 +16,6 @@ By default, the server will publish the `_site` folder inside your root folder a
 
 This code doesn't (yet) auto-publish things you save through jekyll, so you'll probably also want to have your `jekyll --auto` command-line process running in a different terminal window.
 
-
-
 ### Limitations
 
 If you change the slug, date, or the text filter of an entry, you'll need to refresh the blog after you save it. (I use the filename as the post ID, but changing the slug or the filter changes the filename, so the GUI tool will lose the connection).
@@ -27,7 +25,7 @@ Not all clients work. Let me know if you're using a weird client and having prob
 File upload support is very very new. Might work.
 
 
-### TODO
+### TODO (That'll never be done :):
 
 * username/password support, so it's safe to run on a remote server.
 
