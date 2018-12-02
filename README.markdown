@@ -4,7 +4,7 @@ A stand-alone ruby/webrick server that will expose a Jekyll source folder via th
 
 ~~[jekyll-metaweblog is available on Github](https://github.com/tominsam/jekyll-metaweblog), and is under active development. It's not perfect, but it works.~~
 
-This is a [fork](https://github.com/bbum/jekyll-metaweblog) of tominsam's jekyll-metaweblog as it had gone stale (as these things do).   The fork attempts to modernize to the state of things in 2018.
+This is a [fork](https://github.com/bbum/jekyll-metaweblog) of tominsam's jekyll-metaweblog as it had gone stale (as these things do).   The fork attempts to modernize to the state of things in 2018.  This README is largely untouched from the original, btw.  I like the todo list, but I'm not any more likely to address most of it. :)
 
 ### Usage
 
