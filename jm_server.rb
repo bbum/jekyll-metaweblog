@@ -4,6 +4,7 @@ require 'webrick'
 require 'xmlrpc/server'
 require 'optparse'
 require './metaweblog.rb'
+require 'yaml'
 
 options = {}
 
@@ -26,6 +27,7 @@ optparse = OptionParser.new do|opts|
     options[:root] = nil
     opts.on( '-r', '--root FOLDER', 'Define the jekyll input folder (required)' ) do |root|
         options[:root] = root
+        options[:yaml] = YAML.load_file(File.join(root, "_config.yml"))
     end
 
     options[:web] = nil

@@ -15,19 +15,20 @@ require './monkeypatch.rb'
 
 
 class MetaWeblog
-    attr_accessor :store, :filters, :custom_field_names, :host, :port, :password
+    attr_accessor :store, :filters, :custom_field_names, :host, :port, :password, :yaml
     
 
-    def initialize(store, host, port, password)
+    def initialize(store, host, port, password, yaml)
         self.store = store
         self.host = host
         self.port = port
         self.password = password # TODO - use this
-
+        self.yaml = yaml
 
         # keys should map to file extensions. We rename the file if the filter is changed.
         self.filters = [
             { "key" => "markdown", "label" => "Markdown" },
+            { "key" => "md", "label" => "Markdown" },
             { "key" => "html", "label" => "HTML" },
         ]
         
@@ -70,9 +71,27 @@ class MetaWeblog
             :post_status => "publish",
         }
     end
+
+    def post_response_wp(post)
+      pr = post_response(post)
+      # because of course WP vs. metaweblog spells the metadat keys differently.
+      # {"comment_status"=>"closed", "terms_names"=>{"post_tag"=>["Photography"]}, "post_status"=>"publish", "post_format"=>"standard", "post_title"=>"Emerald Contemplates", "post_thumbnail"=>"", "terms"=>{"category"=>[]}, "post_content"=>"", "ping_status"=>"closed"}
+      return {
+        :post_id => pr[:postid],
+        :post_title => pr[:title],
+        :post_date => pr[:dateCreated],
+        :post_status => pr[:post_status],
+        :post_content => pr[:description],
+        :post_type => "post",
+        :terms_names => {
+          "post_tag" => post.tags,
+        }
+      }
+    end
     
     # wordpress pages have all the stuff posts have, and also some extra things.
     # These must be present, or Marsedit will just dump them in with the posts.
+
     def page_response(post)
         return post_response(post).merge({
             :page_id => post.filename, # spec says this is an integer, but most clients I've tried can cope.
@@ -80,6 +99,13 @@ class MetaWeblog
             :page_status => "publish",
             :wp_page_template => post.data["layout"] || "",
         })
+    end
+
+    def page_response_wp(post)
+      pr = post_response_wp(post)
+      return pr.merge({
+                        :post_type => "page"
+                      })
     end
     
     # return a custom post data structure. Can't just return eveything, because if the
@@ -257,7 +283,6 @@ class MetaWeblog
     
     
     # wordpress API
-    
     def getPage(blogId, pageId, user, pass)
         page = getPostOrDie(pageId)
         return page_response(page)
@@ -267,13 +292,28 @@ class MetaWeblog
         pages = store.pages[0,limit]
         return pages.map{|p| page_response(p) }
     end
+
+    # wp.getPosts( ["friday", "", "", {"number"=>50, "offset"=>0, "post_type"=>"post"}, ["post", "terms", "custom_fields", "enclosure"]] )
+    def getPosts(blogId, user, pass, details, fields)
+      limit = details["number"]
+      offset = details["offset"]
+      postType = details["post_type"]
+      if postType.eql? "post"
+        posts = store.posts[offset, limit]
+        return posts.map{ |p| post_response_wp(p) }
+      else
+        return []
+        posts = store.pages[offset, limit]
+        return posts.map{ |p| page_response_wp(p) }
+      end
+    end
     
     def getTags(blogId, user, pass)
         all_tags = ( store.posts + store.pages ).map{|p| p.tags }.flatten
         grouped = {}
         all_tags.each_with_index{|t, i|
             grouped[t] ||= {
-                :tag_id => t, # TODO - spec says this is an int. But I can't do that.
+                :tag_id => i, # TODO - spec says this is an int. But I can't do that.
                 :name => t,
                 :count => 0,
                 :slug => t,
@@ -318,7 +358,23 @@ class MetaWeblog
             }
         ]
     end
-    
+
+    def getUsers(something, user, pass = nil, roles = nil)
+      return [
+        {
+          :user_id => "#{self.yaml["author_nickname"]}",
+          :username => "#{self.yaml["author_nickname"]}",
+          :first_name => "#{self.yaml["author_firstname"]}",
+          :last_name => "#{self.yaml["author_laststname"]}",
+          :bio => "#{self.yaml["author_bio"]}",
+          :email => "#{self.yaml["author_email"]}",
+          :nickname => "#{self.yaml["author_nickname"]}",
+          :nicename => "#{self.yaml["author_name"]}",
+          :display_name => "#{self.yaml["author_name"]}",
+        }
+      ]
+    end
+
     def getComments(postid, user, pass, extra)
         return []
     end
@@ -334,13 +390,12 @@ def attach_metaweblog_methods(server, options)
     store.git = true # TODO - make option
 
     # namespaces are for the WEAK
-    metaWeblog = MetaWeblog.new(store, options[:host], options[:port], options[:password])
+    metaWeblog = MetaWeblog.new(store, options[:host], options[:port], options[:password], options[:yaml])
     server.add_handler("blogger", metaWeblog)
     server.add_handler("metaWeblog", metaWeblog)
     server.add_handler("mt", metaWeblog)
     server.add_handler("wp", metaWeblog)
     server.add_introspection # the wordpress IOS client requires this
-
 
     # this is just debugging
 

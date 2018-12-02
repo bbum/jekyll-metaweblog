@@ -93,6 +93,7 @@ class Post
         # towards no right now - if you want something clever, do it with a
         # text editor.
         self.body = content.split(/---\s*\n/, 3)[2]
+        # self.body = content # can't decide if the YAML should go along with te content or not.
 
         if not self.data["permalink"]
             self.data["permalink"] = "/" + self.filename.gsub(/\/index\.\w+$/,"/")
