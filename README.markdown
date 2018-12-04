@@ -1,3 +1,6 @@
+***This is a dead fork.   It has the beginnings of a Wordpress XML-RPC API implementation, but it is incomplete and, frankly, wrong.  It will return a list of articles, but fails on tags/categories.  No support for writing.  I (bbum) have abandoned it.***
+
+
 ## jekyll-metaweblog
 
 A stand-alone ruby/webrick server that will expose a Jekyll source folder via the Blogger / MT / Wordpress XML-RPC metaweblog interface, allowing you to create/edit/delete posts and pages using a GUI client, such as Marsedit.
